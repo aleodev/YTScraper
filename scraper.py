@@ -1,13 +1,22 @@
-import pytube.exceptions
-from pytube import YouTube
+from pytube.exceptions import VideoUnavailable
+import dearpygui.dearpygui as dpg
 import requests
-import tempfile
 
 # Format List
 formats = [  # Video
-    "MP4", "FLV", "WMV", "MOV", "AVI",
+    "MP4",
+    "FLV",
+    "WMV",
+    "MOV",
+    "AVI",
     # Audio
-    "MP3", "WAV", "AAC", "FLAC", "OGG", "WMA"]
+    "MP3",
+    "WAV",
+    "AAC",
+    "FLAC",
+    "OGG",
+    "WMA",
+]
 
 
 class Scraper:
@@ -31,13 +40,12 @@ class Scraper:
     # Video URL
     url = ""
 
-    def verifyID(self, urlid):
+    def verify_url(self, urlid):
         r = requests.get("https://www.youtube.com/watch?v=" + urlid)
-        print(r)
         if "Video unavailable" in r.text:
-            self.url = ""
+            self.url = ""  # SHOW MODAL WITH ERROR
         else:
-            print("BAD")
+            # print("BAD")
             self.url = "https://www.youtube.com/watch?v=" + urlid
 
     def failedDownload(self, reason):
@@ -45,24 +53,18 @@ class Scraper:
         self.progress = 0
         self.inProgress = False
 
+    def download(self):
+        url = verify_url(self.url)
+
+    def update_progress(self, progress):
+        dpg.configure_item("progress", overlay="LOL", default_value=1)
+
     def save(self):
         match format:
             case "MP4":
-                print('TO MP4')
-            case "FLV":
-                print('TO FLV')
-            case "FLV":
-                print('TO FLV')
-            case "FLV":
-                print('TO FLV')
-            case "FLV":
-                print('TO FLV')
-            case "FLV":
-                print('TO FLV')
-            case "FLV":
-                print('TO FLV')
-            case "FLV":
-                print('TO FLV')
-            case "FLV":
-                print('TO FLV')
+                print("TO MP4")
+            case "MP3":
+                print("TO MP3")
+            case "WAV":
+                print("TO FLV")
         print("SAVED")
