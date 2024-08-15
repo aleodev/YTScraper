@@ -1,6 +1,6 @@
 from pytube.exceptions import VideoUnavailable
 import dearpygui.dearpygui as dpg
-import requests
+import httpx
 
 # Format List
 formats = {
@@ -30,41 +30,51 @@ class Scraper:
             cls._instance = super(Scraper, cls).__new__(cls)
         return cls._instance
 
-    # Conversion Format
-    format = ""
-    # Download Status
-    status = ""
-    # Download Progress
-    progress = 0
-    # Currently Downloading
-    inProgress = False
-    # Temp File Path
-    temp_file_path = ""
-    # Video URL
-    url = ""
-
-    def verify_url(self):
-        # r = requests.get("https://www.youtube.com/watch?v=" + urlid)
-        # if "Video unavailable" in r.text:
-        #     self.show_error("bad link")  # SHOW MODAL WITH ERROR
-        # else:
-        #     print("good")
-        return None
-
-    def download(self):
-        url = self.verify_url()
-        if url is not None:
-
-            # Download..
-            print("download")
-
     def show_error(self, msg):
         print(msg)
+
+    def verify_url(self):
+        raw_url = dpg.get_value("url")
+        # Fetch
+        try:
+            r = httpx.get(raw_url)
+            r.raise_for_status()
+        except Exception as e:
+            print(e)
+            return False
+        return raw_url
+
+    def download_youtube(self, url):
+        print(f"download youtube {url}")
+
+    def download_soundcloud(self, url):
+        print(f"download soundcloud {url}")
+
+    def run(self):
+        verified_url = self.verify_url()
+        if verified_url:
+            # Check platform
+            platform = dpg.get_value("platform").lower()
+
+            if platform in verified_url:
+                if platform == "youtube":
+                    self.download_youtube(verified_url)
+                elif platform == "soundcloud":
+                    self.download_soundcloud(verified_url)
+                else:
+                    self.show_error("The platform you selected isn't supported.")
+            else:
+                self.show_error(
+                    "The link doesn't match the selected platform. Please check it."
+                )
+
+        else:
+            self.show_error("You've entered an invalid url. Please try again.")
 
     def update_progress(self, progress):
         dpg.configure_item("progress", overlay=progress, default_value=progress)
 
-    def save(self):
+    def convert(self):
         match format:
             case "MP4":
                 print("TO MP4")

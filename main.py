@@ -9,10 +9,6 @@ ytScraper = Scraper()
 
 
 # Callbacks
-def verify_cb(sender, app_data):
-    print(dpg.get_value("format"))
-
-
 def update_formats(reset=True):
     platform = dpg.get_value("platform").lower()
     supported = []
@@ -28,8 +24,6 @@ def update_formats(reset=True):
 
     return supported
 
-
-# def
 
 # GUI Context
 dpg.create_context()
@@ -56,8 +50,8 @@ with dpg.texture_registry():
     )
 
 with dpg.window(tag="Main"):
-    dpg.add_button(label="URL", callback=verify_cb)
-    dpg.add_input_text(width=400, pos=[41, 8])
+    dpg.add_button(label="URL")
+    dpg.add_input_text(tag="url", width=400, pos=[41, 8])
     dpg.add_file_dialog(
         directory_selector=True,
         show=False,
@@ -87,7 +81,7 @@ with dpg.window(tag="Main"):
         width=433,
         default_value=0,
     )
-    dpg.add_button(label="DOWNLOAD", width=433)
+    dpg.add_button(label="DOWNLOAD", width=433, callback=ytScraper.run)
 
 # NOTE THEME
 # HeaderHovered(menu button hover) -> (255,255,255,127)
@@ -106,7 +100,7 @@ with dpg.window(tag="Main"):
 # dpg.bind_theme(global_theme)
 # dpg.show_style_editor()
 
-dpg.create_viewport(title="Track Digger", width=550, height=450)
+dpg.create_viewport(title="Track Digger (rev 0.1)", width=550, height=450)
 dpg.setup_dearpygui()
 dpg.show_viewport()
 dpg.set_primary_window("Main", True)
