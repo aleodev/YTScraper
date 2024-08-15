@@ -3,20 +3,23 @@ import dearpygui.dearpygui as dpg
 import requests
 
 # Format List
-formats = [  # Video
-    "MP4",
-    "FLV",
-    "WMV",
-    "MOV",
-    "AVI",
-    # Audio
-    "MP3",
-    "WAV",
-    "AAC",
-    "FLAC",
-    "OGG",
-    "WMA",
-]
+formats = {
+    "audio": [
+        "MP3",
+        "WAV",
+        "AAC",
+        "FLAC",
+        "OGG",
+        "WMA",
+    ],
+    "video": [
+        "MP4",
+        "FLV",
+        "WMV",
+        "MOV",
+        "AVI",
+    ],
+}
 
 
 class Scraper:
@@ -40,24 +43,26 @@ class Scraper:
     # Video URL
     url = ""
 
-    def verify_url(self, urlid):
-        r = requests.get("https://www.youtube.com/watch?v=" + urlid)
-        if "Video unavailable" in r.text:
-            self.url = ""  # SHOW MODAL WITH ERROR
-        else:
-            # print("BAD")
-            self.url = "https://www.youtube.com/watch?v=" + urlid
-
-    def failedDownload(self, reason):
-        self.status = reason
-        self.progress = 0
-        self.inProgress = False
+    def verify_url(self):
+        # r = requests.get("https://www.youtube.com/watch?v=" + urlid)
+        # if "Video unavailable" in r.text:
+        #     self.show_error("bad link")  # SHOW MODAL WITH ERROR
+        # else:
+        #     print("good")
+        return None
 
     def download(self):
-        url = verify_url(self.url)
+        url = self.verify_url()
+        if url is not None:
+
+            # Download..
+            print("download")
+
+    def show_error(self, msg):
+        print(msg)
 
     def update_progress(self, progress):
-        dpg.configure_item("progress", overlay="LOL", default_value=1)
+        dpg.configure_item("progress", overlay=progress, default_value=progress)
 
     def save(self):
         match format:
