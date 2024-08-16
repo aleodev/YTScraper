@@ -2,6 +2,8 @@ from pytube.exceptions import VideoUnavailable
 import dearpygui.dearpygui as dpg
 import httpx
 import yt_dlp
+from pathlib import Path
+import shutil
 
 # Format list
 formats = {
@@ -38,6 +40,12 @@ class Scraper:
         dpg.configure_item("dialog", show=True, label=type)
         dpg.set_value(f"dialog_msg", msg)
 
+    def prepare_temp_folder(self):
+        temp_folder = Path.cwd() / "temp"
+        if temp_folder.exists():
+            shutil.rmtree(temp_folder)
+        temp_folder.mkdir(parents=True, exist_ok=True)
+
     def verify_url(self):
         raw_url = dpg.get_value("url")
 
@@ -55,15 +63,20 @@ class Scraper:
     # https://soundcloud.com/grinchn4abuck/grinchn4-all-onmy-own
 
     def dl_soundcloud(self, url):
-        format = dpg.get_value("format")
+        # Retrieve requested format
+        format = dpg.get_value("format").lower()
+
+        # Prep & clean temp folder
+        self.prepare_temp_folder()
+
         # Define options for youtube-dl
         ydl_opts = {
             "format": "bestaudio/best",
-            "outtmpl": "export/%(title)s.%(ext)s",
+            "outtmpl": "temp/%(title)s.%(ext)s",
             "postprocessors": [
                 {
                     "key": "FFmpegExtractAudio",
-                    "preferredcodec": format.lower(),
+                    "preferredcodec": format,
                     "preferredquality": "320",  # 128 for low quality
                 }
             ],
@@ -76,23 +89,60 @@ class Scraper:
         dpg.configure_item("progress", overlay="Downloading ...")
 
         # Download the audio
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(url, download=True)
-            dpg.configure_item("progress", default_value=0, overlay="Finished!")
-            # self.show_msg("Success", ydl.prepare_filename(info_dict))
-            # original_file = ydl.prepare_filename(info_dict)
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                # Process
+                info_dict = ydl.extract_info(url, download=True)
+                processed_path = Path(info_dict["requested_downloads"][0]["filepath"])
 
-        # Determine the new file name
-        # original_ext = os.path.splitext(original_file)[1]
-        # base_name = os.path.splitext(original_file)[0]
-        # new_file = f"{base_name}.{format.lower()}"
+                # Extension
+                extension = f".{format}"
 
-        # Rename the file if it exists
-        # if os.path.exists(original_file):
-        #     os.rename(original_file, new_file)
-        #     self.show_msg("success", f"Successfully downloaded & exported {new_file}!")
-        # else:
-        #     self.show_msg("error", "The file was not found after download.")
+                # Export path TODO:(convert this to use config instead and default to export folder)
+                export_file_path = (
+                    Path.cwd() / "export" / (processed_path.stem + extension)
+                )
+
+                # Check if processed file exists
+                if processed_path.is_file():
+                    try:
+                        # Create export path if doesn't exist
+                        export_file_path.parent.mkdir(parents=True, exist_ok=True)
+
+                        if processed_path.suffix != extension:
+                            # Rename the file only if necessary
+                            processed_path.rename(export_file_path)
+                        else:
+                            # If no renaming needed, just move the file
+                            processed_path.replace(export_file_path)
+
+                        # Print success message if successful
+                        self.show_msg(
+                            "success",
+                            f"Successfully processed & exported {export_file_path}!",
+                        )
+                        dpg.configure_item(
+                            "progress", default_value=0, overlay="Finished!"
+                        )
+                    except Exception as e:
+                        # Print error message if any exception occurs
+                        self.show_msg("Error", f"An error occurred: {e}")
+                        dpg.configure_item(
+                            "progress", default_value=0, overlay="Failed!"
+                        )
+                else:
+                    # Print error message if the file does not exist
+                    self.show_msg("Error", "Processed file does not exist.")
+                    dpg.configure_item("progress", default_value=0, overlay="Failed!")
+
+        except yt_dlp.DownloadError as e:
+            # Handle specific yt_dlp download errors
+            self.show_msg("Error", f"Download error: {e}")
+            dpg.configure_item("progress", default_value=0, overlay="Failed!")
+        except Exception as e:
+            # Handle general exceptions
+            self.show_msg("Error", f"An error occurred: {e}")
+            dpg.configure_item("progress", default_value=0, overlay="Failed!")
 
     def run(self):
         # Check url validity
