@@ -1,6 +1,6 @@
 import dearpygui.dearpygui as dpg
-from scraper import formats
-from scraper import Scraper
+from scraper import Scraper, formats
+from utils import prepare_temp_folder
 
 # Config Setup
 
@@ -136,9 +136,14 @@ with dpg.window(
 # dpg.bind_theme(global_theme)
 # dpg.show_style_editor()
 
-dpg.create_viewport(title="Track Digger (rev 0.1)", width=550, height=450)
-dpg.setup_dearpygui()
-dpg.show_viewport()
-dpg.set_primary_window("Main", True)
-dpg.start_dearpygui()
-dpg.destroy_context()
+if __name__ == "__main__":
+    # Startup functions
+    prepare_temp_folder()
+
+    # GUI init
+    dpg.create_viewport(title="Track Digger (rev 0.1)", width=550, height=450)
+    dpg.setup_dearpygui()
+    dpg.show_viewport()
+    dpg.set_primary_window("Main", True)
+    dpg.start_dearpygui()
+    dpg.destroy_context()

@@ -3,7 +3,7 @@ import dearpygui.dearpygui as dpg
 import httpx
 import yt_dlp
 from pathlib import Path
-import shutil
+from utils import prepare_temp_folder
 
 # Format list
 formats = {
@@ -40,12 +40,6 @@ class Scraper:
         dpg.configure_item("dialog", show=True, label=type)
         dpg.set_value(f"dialog_msg", msg)
 
-    def prepare_temp_folder(self):
-        temp_folder = Path.cwd() / "temp"
-        if temp_folder.exists():
-            shutil.rmtree(temp_folder)
-        temp_folder.mkdir(parents=True, exist_ok=True)
-
     def verify_url(self):
         raw_url = dpg.get_value("url")
 
@@ -67,7 +61,7 @@ class Scraper:
         format = dpg.get_value("format").lower()
 
         # Prep & clean temp folder
-        self.prepare_temp_folder()
+        prepare_temp_folder()
 
         # Define options for youtube-dl
         ydl_opts = {
@@ -141,6 +135,7 @@ class Scraper:
             dpg.configure_item("progress", default_value=0, overlay="Failed!")
         except Exception as e:
             # Handle general exceptions
+            print(e)
             self.show_msg("Error", f"An error occurred: {e}")
             dpg.configure_item("progress", default_value=0, overlay="Failed!")
 
