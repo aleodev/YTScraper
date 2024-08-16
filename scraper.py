@@ -29,12 +29,10 @@ formats = {
 
 
 class Scraper:
-    _instance = None
+    def __init__(self):
+        pass
 
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(Scraper, cls).__new__(cls)
-        return cls._instance
+    running = False
 
     def show_msg(self, type, msg):
         dpg.configure_item("dialog", show=True, label=type)
@@ -140,6 +138,9 @@ class Scraper:
             dpg.configure_item("progress", default_value=0, overlay="Failed!")
 
     def run(self):
+        # Run started
+        self.running = True
+
         # Check url validity
         verified_url = self.verify_url()
 
@@ -161,6 +162,9 @@ class Scraper:
                 )
         else:
             self.show_msg("Error", "You've entered an invalid url. Please try again.")
+
+        # Run finished
+        self.running = False
 
     def update_progress(self, d):
         status = d.get("status")
