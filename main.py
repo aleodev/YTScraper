@@ -59,8 +59,12 @@ def cancel_callback(sender, app_data):
     print("App Data: ", app_data)
 
 
-def hide_error_dialog(sender, app_data, user_data):
-    dpg.hide_item("error_dialog")
+def hide_dialog():
+    dpg.hide_item("dialog")
+
+
+def hide_success_dialog():
+    dpg.hide_item("success_dialog")
 
 
 # Thumbnail Placeholder
@@ -106,14 +110,15 @@ with dpg.window(tag="Main"):
     dpg.add_button(label="DOWNLOAD", width=433, callback=ytScraper.run)
 
 with dpg.window(
-    label="Error",
+    label="",
     autosize=True,
     modal=True,
     show=False,
-    tag="error_dialog",
+    tag="dialog",
 ):
-    dpg.add_text(wrap=375, default_value="", tag="error_message")
-    dpg.add_button(label="OK", callback=hide_error_dialog)
+    dpg.add_text(wrap=375, default_value="", tag="dialog_msg")
+    dpg.add_button(label="close", callback=hide_dialog)
+
 # NOTE THEME
 # HeaderHovered(menu button hover) -> (255,255,255,127)
 # HeaderActive(menu button hold click) -> (255,255,255,63)
