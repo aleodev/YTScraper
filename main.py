@@ -8,6 +8,24 @@ from scraper import Scraper
 ytScraper = Scraper()
 
 
+# GUI Functions
+# def center_window(window_tag):
+#     # Get the viewport size (the entire application window)
+#     viewport_width = dpg.get_viewport_client_width()
+#     viewport_height = dpg.get_viewport_client_height()
+
+#     # Get the window size
+#     window_width = dpg.get_item_width(window_tag)
+#     window_height = dpg.get_item_height(window_tag)
+
+#     # Calculate the position to center the window
+#     pos_x = (viewport_width - window_width) // 2
+#     pos_y = (viewport_height - window_height) // 2
+
+#     # Set the window position
+#     dpg.set_item_pos(window_tag, [pos_x, pos_y])
+
+
 # Callbacks
 def update_formats(reset=True):
     platform = dpg.get_value("platform").lower()
@@ -39,6 +57,10 @@ def cancel_callback(sender, app_data):
     print("Cancel was clicked.")
     print("Sender: ", sender)
     print("App Data: ", app_data)
+
+
+def hide_error_dialog(sender, app_data, user_data):
+    dpg.hide_item("error_dialog")
 
 
 # Thumbnail Placeholder
@@ -83,6 +105,15 @@ with dpg.window(tag="Main"):
     )
     dpg.add_button(label="DOWNLOAD", width=433, callback=ytScraper.run)
 
+with dpg.window(
+    label="Error",
+    autosize=True,
+    modal=True,
+    show=False,
+    tag="error_dialog",
+):
+    dpg.add_text(wrap=375, default_value="", tag="error_message")
+    dpg.add_button(label="OK", callback=hide_error_dialog)
 # NOTE THEME
 # HeaderHovered(menu button hover) -> (255,255,255,127)
 # HeaderActive(menu button hold click) -> (255,255,255,63)

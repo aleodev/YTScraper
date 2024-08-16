@@ -31,16 +31,17 @@ class Scraper:
         return cls._instance
 
     def show_error(self, msg):
-        print(msg)
+        dpg.set_value("error_message", msg)
+        dpg.show_item("error_dialog")
 
     def verify_url(self):
         raw_url = dpg.get_value("url")
+        print(raw_url)
         # Fetch
         try:
             r = httpx.get(raw_url)
             r.raise_for_status()
-        except Exception as e:
-            print(e)
+        except Exception:
             return False
         return raw_url
 
@@ -67,7 +68,6 @@ class Scraper:
                 self.show_error(
                     "The link doesn't match the selected platform. Please check it."
                 )
-
         else:
             self.show_error("You've entered an invalid url. Please try again.")
 
