@@ -8,24 +8,6 @@ from utils import prepare_temp_folder
 ytScraper = Scraper()
 
 
-# GUI Functions
-# def center_window(window_tag):
-#     # Get the viewport size (the entire application window)
-#     viewport_width = dpg.get_viewport_client_width()
-#     viewport_height = dpg.get_viewport_client_height()
-
-#     # Get the window size
-#     window_width = dpg.get_item_width(window_tag)
-#     window_height = dpg.get_item_height(window_tag)
-
-#     # Calculate the position to center the window
-#     pos_x = (viewport_width - window_width) // 2
-#     pos_y = (viewport_height - window_height) // 2
-
-#     # Set the window position
-#     dpg.set_item_pos(window_tag, [pos_x, pos_y])
-
-
 # Callbacks
 def update_formats(reset=True):
     platform = dpg.get_value("platform").lower()
@@ -43,6 +25,14 @@ def update_formats(reset=True):
     return supported
 
 
+def hide_dialog():
+    dpg.hide_item("dialog")
+
+
+def hide_success_dialog():
+    dpg.hide_item("success_dialog")
+
+
 # GUI Context
 dpg.create_context()
 
@@ -57,14 +47,6 @@ def cancel_callback(sender, app_data):
     print("Cancel was clicked.")
     print("Sender: ", sender)
     print("App Data: ", app_data)
-
-
-def hide_dialog():
-    dpg.hide_item("dialog")
-
-
-def hide_success_dialog():
-    dpg.hide_item("success_dialog")
 
 
 # Thumbnail Placeholder

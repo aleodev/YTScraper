@@ -13,7 +13,6 @@ formats = {
         "AAC",
         "FLAC",
         "OGG",
-        "WMA",
     ],
     "video": [
         "MP4",
@@ -23,9 +22,7 @@ formats = {
         "AVI",
     ],
 }
-
-
-# def progress_hook(d):
+codecs = {"ogg": "vorbis"}
 
 
 class Scraper:
@@ -57,6 +54,7 @@ class Scraper:
     def dl_soundcloud(self, url):
         # Retrieve requested format
         format = dpg.get_value("format").lower()
+        codec = codecs.get(format, format)
 
         # Prep & clean temp folder
         prepare_temp_folder()
@@ -68,12 +66,12 @@ class Scraper:
             "postprocessors": [
                 {
                     "key": "FFmpegExtractAudio",
-                    "preferredcodec": format,
+                    "preferredcodec": codec,
                     "preferredquality": "320",  # 128 for low quality
                 }
             ],
             "noplaylist": True,
-            "progress_hooks": [self.update_progress],
+            "progress_hooks": [self.progress_hook],
             "quiet": True,
         }
 
@@ -82,9 +80,12 @@ class Scraper:
 
         # Download the audio
         try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            with yt_dlp.YoutubeDL(ydl_opts) as dlp:
+                # Needed vars
+                platform = dpg.get_value("platform").lower()
+
                 # Process
-                info_dict = ydl.extract_info(url, download=True)
+                info_dict = dlp.extract_info(url, download=True)
                 processed_path = Path(info_dict["requested_downloads"][0]["filepath"])
 
                 # Extension
@@ -92,7 +93,7 @@ class Scraper:
 
                 # Export path TODO:(convert this to use config instead and default to export folder)
                 export_file_path = (
-                    Path.cwd() / "export" / (processed_path.stem + extension)
+                    Path.cwd() / "export" / platform / (processed_path.stem + extension)
                 )
 
                 # Check if processed file exists
@@ -133,7 +134,6 @@ class Scraper:
             dpg.configure_item("progress", default_value=0, overlay="Failed!")
         except Exception as e:
             # Handle general exceptions
-            print(e)
             self.show_msg("Error", f"An error occurred: {e}")
             dpg.configure_item("progress", default_value=0, overlay="Failed!")
 
@@ -166,7 +166,7 @@ class Scraper:
         # Run finished
         self.running = False
 
-    def update_progress(self, d):
+    def progress_hook(self, d):
         status = d.get("status")
         total = d.get("total_bytes_estimate")
         downloaded = d.get("downloaded_bytes")
