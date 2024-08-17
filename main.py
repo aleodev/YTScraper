@@ -82,7 +82,7 @@ with dpg.window(tag="Main"):
     )
     dpg.add_image(width=350, height=191, texture_tag="placeholder")
     dpg.add_listbox(
-        tag="format", items=update_formats(False), pos=[445, 56], width=82, num_items=12
+        tag="format", items=update_formats(False), pos=[445, 56], width=82, num_items=13
     )
     dpg.add_progress_bar(
         tag="progress",

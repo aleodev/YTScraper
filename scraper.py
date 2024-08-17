@@ -46,12 +46,7 @@ class Scraper:
             return False
         return raw_url
 
-    def dl_youtube(self, url):
-        print(f"download youtube {url}")
-
-    # https://soundcloud.com/grinchn4abuck/grinchn4-all-onmy-own
-
-    def dl_soundcloud(self, url):
+    def download(self, url):
         # Retrieve requested format
         format = dpg.get_value("format").lower()
         codec = codecs.get(format, format)
@@ -59,26 +54,37 @@ class Scraper:
         # Prep & clean temp folder
         prepare_temp_folder()
 
-        # Define options for youtube-dl
-        ydl_opts = {
-            "format": "bestaudio/best",
-            "outtmpl": "temp/%(title)s.%(ext)s",
-            "postprocessors": [
-                {
-                    "key": "FFmpegExtractAudio",
-                    "preferredcodec": codec,
-                    "preferredquality": "320",  # 128 for low quality
-                }
-            ],
-            "noplaylist": True,
-            "progress_hooks": [self.progress_hook],
-            "quiet": True,
-        }
-
         # Set progress label
         dpg.configure_item("progress", overlay="Downloading ...")
 
-        # Download the audio
+        # Define options for either audio or video
+        if format.upper() in formats["audio"]:
+            ydl_opts = {
+                "format": "bestaudio/best",
+                "outtmpl": "temp/%(title)s.%(ext)s",
+                "postprocessors": [
+                    {
+                        "key": "FFmpegExtractAudio",
+                        "preferredcodec": codec,
+                        "preferredquality": "320",  # Adjust quality if needed
+                    }
+                ],
+                "noplaylist": True,
+                "progress_hooks": [self.progress_hook],
+                "quiet": True,
+            }
+        elif format.upper() in formats["video"]:
+            ydl_opts = {
+                "format": f"bestvideo[ext={format}]+bestaudio/best",
+                "outtmpl": f"temp/%(title)s.{format}",
+                "noplaylist": True,
+                "progress_hooks": [self.progress_hook],
+                "quiet": True,
+            }
+        else:
+            raise ValueError("Unsupported format selected.")
+
+        # Download start
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as dlp:
                 # Needed vars
@@ -86,6 +92,7 @@ class Scraper:
 
                 # Process
                 info_dict = dlp.extract_info(url, download=True)
+
                 processed_path = Path(info_dict["requested_downloads"][0]["filepath"])
 
                 # Extension
@@ -147,43 +154,35 @@ class Scraper:
         if verified_url:
             # Check platform
             platform = dpg.get_value("platform").lower()
-
             if platform in verified_url:
-                if platform == "youtube":
-                    self.dl_youtube(verified_url)
-                elif platform == "soundcloud":
-                    self.dl_soundcloud(verified_url)
+                if platform in ("youtube", "soundcloud"):
+                    self.download(verified_url)
                 else:
-                    self.show_msg("Error", "The platform you selected isn't supported.")
+                    self.show_msg("Error", "Unsupported platform selected.")
             else:
                 self.show_msg(
                     "Error",
-                    "The link doesn't match the selected platform. Please check it.",
+                    "Incorrect platform selected.",
                 )
         else:
-            self.show_msg("Error", "You've entered an invalid url. Please try again.")
+            self.show_msg("Error", "Invalid url.")
 
         # Run finished
         self.running = False
 
     def progress_hook(self, d):
         status = d.get("status")
-        total = d.get("total_bytes_estimate")
+        total = d.get("total_bytes_estimate") or d.get("total_bytes")
         downloaded = d.get("downloaded_bytes")
         progress = None
+        print("\n -------------------------------")
+        print(f"{status}  {total}  {downloaded}")
+        print("\n -------------------------------")
+        print(d)
         if status == "downloading" and downloaded and total:
             progress = min(1.0, max(0.0, downloaded / total))
         elif status == "finished":
             progress = 1
             dpg.configure_item("progress", overlay="Processing ...")
-        dpg.set_value("progress", progress)
 
-    def convert(self):
-        match format:
-            case "MP4":
-                print("TO MP4")
-            case "MP3":
-                print("TO MP3")
-            case "WAV":
-                print("TO FLV")
-        print("SAVED")
+        dpg.set_value("progress", progress)
