@@ -1,5 +1,6 @@
 import dearpygui.dearpygui as dpg
-from scraper import Scraper, formats
+from scraper import Scraper
+from constants import FORMATS
 from utils import prepare_temp_folder
 
 # Config Setup
@@ -13,9 +14,9 @@ def update_formats(reset=True):
     platform = dpg.get_value("platform").lower()
     supported = []
     if platform.lower() == "youtube":
-        supported = sorted(formats["video"] + formats["audio"])
+        supported = sorted(FORMATS["video"] + FORMATS["audio"])
     elif platform.lower() == "soundcloud":
-        supported = sorted(formats["audio"])
+        supported = sorted(FORMATS["audio"])
     else:
         return []
     if reset:
@@ -70,6 +71,7 @@ with dpg.window(tag="Main"):
         height=300,
     )
     dpg.add_button(label="Output DIR", callback=lambda: dpg.show_item("file_dialog_id"))
+    dpg.add_image(width=350, height=191, texture_tag="placeholder")
     dpg.add_input_text(width=351, pos=[90, 31])
     dpg.add_listbox(
         label="Platform",
