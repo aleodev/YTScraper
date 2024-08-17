@@ -4,25 +4,7 @@ import httpx
 import yt_dlp
 from pathlib import Path
 from utils import prepare_temp_folder
-
-# Format list
-formats = {
-    "audio": [
-        "MP3",
-        "WAV",
-        "AAC",
-        "FLAC",
-        "OGG",
-    ],
-    "video": [
-        "MP4",
-        "FLV",
-        "WMV",
-        "MOV",
-        "AVI",
-    ],
-}
-codecs = {"ogg": "vorbis"}
+from constants import CODECS, FORMATS, AUDIO_QUALITY_MAP, VIDEO_QUALITY_MAP
 
 
 class Scraper:
@@ -49,8 +31,8 @@ class Scraper:
     def download(self, url):
         # Retrieve requested format
         format = dpg.get_value("format").lower()
-        codec = codecs.get(format, format)
-
+        quality = dpg.get_value("quality")
+        codec = CODECS.get(format, format)
         # Prep & clean temp folder
         prepare_temp_folder()
 
@@ -58,7 +40,8 @@ class Scraper:
         dpg.configure_item("progress", overlay="Downloading ...")
 
         # Define options for either audio or video
-        if format.upper() in formats["audio"]:
+        if format.upper() in FORMATS["audio"]:
+            kbps = AUDIO_QUALITY_MAP.get(quality, "best")
             ydl_opts = {
                 "format": "bestaudio/best",
                 "outtmpl": "temp/%(title)s.%(ext)s",
@@ -66,16 +49,17 @@ class Scraper:
                     {
                         "key": "FFmpegExtractAudio",
                         "preferredcodec": codec,
-                        "preferredquality": "320",  # Adjust quality if needed
+                        "preferredquality": kbps,
                     }
                 ],
                 "noplaylist": True,
                 "progress_hooks": [self.progress_hook],
                 "quiet": True,
             }
-        elif format.upper() in formats["video"]:
+        elif format.upper() in FORMATS["video"]:
+            resolution = VIDEO_QUALITY_MAP.get(quality, "best")
             ydl_opts = {
-                "format": f"bestvideo[ext={format}]+bestaudio/best",
+                "format": f"bestvideo[height<={resolution}][ext={format}]+bestaudio/best",
                 "outtmpl": f"temp/%(title)s.{format}",
                 "noplaylist": True,
                 "progress_hooks": [self.progress_hook],
@@ -87,21 +71,27 @@ class Scraper:
         # Download start
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as dlp:
-                # Needed vars
                 platform = dpg.get_value("platform").lower()
 
                 # Process
                 info_dict = dlp.extract_info(url, download=True)
-
                 processed_path = Path(info_dict["requested_downloads"][0]["filepath"])
-
                 # Extension
                 extension = f".{format}"
+                # Filename
+                filename = (
+                    processed_path.name
+                    if processed_path.suffix == extension
+                    else processed_path.stem + extension
+                )
+                # Fix multiple extension issue
+                filename = Path(filename)
+                filename = (
+                    filename.with_suffix("") if len(filename.suffixes) > 1 else filename
+                )
 
                 # Export path TODO:(convert this to use config instead and default to export folder)
-                export_file_path = (
-                    Path.cwd() / "export" / platform / (processed_path.stem + extension)
-                )
+                export_file_path = Path.cwd() / "export" / platform / filename
 
                 # Check if processed file exists
                 if processed_path.is_file():
@@ -147,6 +137,7 @@ class Scraper:
     def run(self):
         # Run started
         self.running = True
+        dpg.configure_item("download", enabled=False)
 
         # Check url validity
         verified_url = self.verify_url()
@@ -169,16 +160,13 @@ class Scraper:
 
         # Run finished
         self.running = False
+        dpg.configure_item("download", enabled=True)
 
     def progress_hook(self, d):
         status = d.get("status")
         total = d.get("total_bytes_estimate") or d.get("total_bytes")
         downloaded = d.get("downloaded_bytes")
         progress = None
-        print("\n -------------------------------")
-        print(f"{status}  {total}  {downloaded}")
-        print("\n -------------------------------")
-        print(d)
         if status == "downloading" and downloaded and total:
             progress = min(1.0, max(0.0, downloaded / total))
         elif status == "finished":

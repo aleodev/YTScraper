@@ -58,7 +58,7 @@ with dpg.texture_registry():
     )
 
 with dpg.window(tag="Main"):
-    dpg.add_button(label="URL")
+    dpg.add_button(label="URL", enabled=False)
     dpg.add_input_text(tag="url", width=400, pos=[41, 8])
     dpg.add_file_dialog(
         directory_selector=True,
@@ -72,6 +72,7 @@ with dpg.window(tag="Main"):
     dpg.add_button(label="Output DIR", callback=lambda: dpg.show_item("file_dialog_id"))
     dpg.add_input_text(width=351, pos=[90, 31])
     dpg.add_listbox(
+        label="Platform",
         tag="platform",
         default_value="YouTube",
         items=["YouTube", "SoundCloud"],
@@ -80,16 +81,57 @@ with dpg.window(tag="Main"):
         width=82,
         num_items=2,
     )
-    dpg.add_image(width=350, height=191, texture_tag="placeholder")
+    # with dpg.table(
+    #     header_row=True,
+    #     policy=dpg.mvTable_SizingFixedFit,
+    #     resizable=False,
+    #     no_host_extendX=True,
+    #     borders_outerH=True,
+    #     borders_innerV=True,
+    #     borders_outerV=True,
+    # ):
+
+    #     # use add_table_column to add columns to the table,
+    #     # table columns use slot 0
+    #     dpg.add_table_column(label="Header 1")
+    #     dpg.add_table_column(label="Header 2")
+    #     dpg.add_table_column(label="Header 3")
+
+    #     # add_table_next_column will jump to the next row
+    #     # once it reaches the end of the columns
+    #     # table next column use slot 1
+    #     for i in range(0, 4):
+    #         with dpg.table_row():
+    #             for j in range(0, 3):
+    #                 dpg.add_text(f"Row{i} Column{j}")
     dpg.add_listbox(
-        tag="format", items=update_formats(False), pos=[445, 56], width=82, num_items=13
+        label="Format",
+        tag="format",
+        items=update_formats(False),
+        pos=[445, 56],
+        width=82,
+        num_items=13,
+    )
+    dpg.add_listbox(
+        label="Quality",
+        tag="quality",
+        items=["High", "Medium", "Low"],
+        pos=[445, 291],
+        width=82,
+        num_items=3,
     )
     dpg.add_progress_bar(
         tag="progress",
         width=433,
         default_value=0,
     )
-    dpg.add_button(label="DOWNLOAD", width=433, callback=ytScraper.run)
+    dpg.add_button(
+        tag="download",
+        label="DOWNLOAD",
+        width=433,
+        callback=ytScraper.run,
+    )
+
 
 with dpg.window(
     label="",
@@ -123,7 +165,7 @@ if __name__ == "__main__":
     prepare_temp_folder()
 
     # GUI init
-    dpg.create_viewport(title="Track Digger (rev 0.1)", width=550, height=450)
+    dpg.create_viewport(title="Track Digger (rev 0.1)", width=610, height=400)
     dpg.setup_dearpygui()
     dpg.show_viewport()
     dpg.set_primary_window("Main", True)
