@@ -3,7 +3,7 @@ import httpx
 import yt_dlp
 from pathlib import Path
 from utils import setup_temp
-from constants import CODECS, FORMATS, AUDIO_QUALITY_MAP, VIDEO_QUALITY_MAP
+from constants import CODECS, FORMATS, AUDIO_QUALITY_MAP, VIDEO_QUALITY_MAP, TEMP_PATH
 
 
 class Scraper:
@@ -21,6 +21,7 @@ class Scraper:
     def set_gui_interaction(enable):
         dpg.configure_item("url", readonly=not enable)
         dpg.configure_item("title", readonly=not enable)
+        dpg.configure_item("output", readonly=not enable)
         dpg.configure_item("output_dialog_button", enabled=enable)
         dpg.configure_item("download", show=enable, enabled=enable)
 
@@ -77,6 +78,12 @@ class Scraper:
 
         # Download start
         try:
+            # Get output dir from input
+            output_dir_input = Path(dpg.get_value("output"))
+            # Compare output dir with TEMP_PATH
+            if Path(output_dir_input) == TEMP_PATH:
+                raise Exception("The temp directory can't be used.")
+
             with yt_dlp.YoutubeDL(ydl_opts) as dlp:
                 platform = dpg.get_value("platform").lower()
                 custom_title = dpg.get_value("title").lower()
@@ -103,27 +110,32 @@ class Scraper:
                     f"{custom_title or title}{filename.suffix}"
                 )
 
-                # Export path TODO:(convert this to use config instead and default to export folder)
-                export_dir = Path(dpg.get_value("output"))
-                export_file_path = export_dir / platform / custom_filename
+                # Output path TODO:(convert this to use config instead and default to export folder)
+                output_dir = output_dir_input / platform
+
+                # Check if the directory exists, and create it if it doesn't
+                output_dir.mkdir(parents=True, exist_ok=True)
+
+                # Combine the output directory with the filename
+                output_file_path = output_dir / custom_filename
 
                 # Check if processed file exists
                 if processed_path.is_file():
                     try:
-                        # Create export path if doesn't exist
-                        export_file_path.parent.mkdir(parents=True, exist_ok=True)
+                        # Create output path if doesn't exist
+                        output_file_path.parent.mkdir(parents=True, exist_ok=True)
 
                         if processed_path.suffix != extension:
                             # Rename the file only if necessary
-                            processed_path.rename(export_file_path)
+                            processed_path.rename(output_file_path)
                         else:
                             # If no renaming needed, just move the file
-                            processed_path.replace(export_file_path)
+                            processed_path.replace(output_file_path)
 
                         # Print success message if successful
                         self.show_msg(
                             "success",
-                            f"Successfully processed & exported {export_file_path}!",
+                            f"Successfully processed & exported {output_file_path}!",
                         )
                         dpg.configure_item(
                             "progress", default_value=0, overlay="Finished!"

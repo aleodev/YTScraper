@@ -91,7 +91,6 @@ with dpg.window(tag="Main"):
     dpg.add_input_text(
         tag="output",
         default_value=config.get("scraper", "default_output"),
-        readonly=True,
         width=379,
         pos=[62, 54],
     )
