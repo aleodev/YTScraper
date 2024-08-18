@@ -17,6 +17,13 @@ class Scraper:
         dpg.configure_item("dialog", show=True, label=type)
         dpg.set_value(f"dialog_msg", msg)
 
+    @staticmethod
+    def set_gui_interaction(enable):
+        dpg.configure_item("url", readonly=not enable)
+        dpg.configure_item("title", readonly=not enable)
+        dpg.configure_item("output_dialog_button", enabled=enable)
+        dpg.configure_item("download", show=enable, enabled=enable)
+
     def verify_url(self):
         raw_url = dpg.get_value("url")
 
@@ -44,7 +51,7 @@ class Scraper:
             kbps = AUDIO_QUALITY_MAP.get(quality, "best")
             ydl_opts = {
                 "format": "bestaudio/best",
-                "outtmpl": "temp/%(title)s.%(ext)s",
+                "outtmpl": "temp/%(id)s.%(ext)s",
                 "postprocessors": [
                     {
                         "key": "FFmpegExtractAudio",
@@ -60,7 +67,7 @@ class Scraper:
             resolution = VIDEO_QUALITY_MAP.get(quality, "best")
             ydl_opts = {
                 "format": f"bestvideo[height<={resolution}][ext={format}]+bestaudio/best",
-                "outtmpl": f"temp/%(title)s.{format}",
+                "outtmpl": f"temp/%(id)s.{format}",
                 "noplaylist": True,
                 "progress_hooks": [self.progress_hook],
                 "quiet": True,
@@ -72,9 +79,11 @@ class Scraper:
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as dlp:
                 platform = dpg.get_value("platform").lower()
+                custom_title = dpg.get_value("title").lower()
 
                 # Process
                 info_dict = dlp.extract_info(url, download=True)
+                title = info_dict["title"]
                 processed_path = Path(info_dict["requested_downloads"][0]["filepath"])
                 # Extension
                 extension = f".{format}"
@@ -89,10 +98,14 @@ class Scraper:
                 filename = (
                     filename.with_suffix("") if len(filename.suffixes) > 1 else filename
                 )
+                # Custom title
+                custom_filename = filename.with_name(
+                    f"{custom_title or title}{filename.suffix}"
+                )
 
                 # Export path TODO:(convert this to use config instead and default to export folder)
                 export_dir = Path(dpg.get_value("output"))
-                export_file_path = export_dir / platform / filename
+                export_file_path = export_dir / platform / custom_filename
 
                 # Check if processed file exists
                 if processed_path.is_file():
@@ -137,8 +150,8 @@ class Scraper:
 
     def run(self):
         # Run started
+        self.set_gui_interaction(False)
         self.running = True
-        dpg.configure_item("download", enabled=False)
 
         # Check url validity
         verified_url = self.verify_url()
@@ -160,8 +173,9 @@ class Scraper:
             self.show_msg("Error", "Invalid url.")
 
         # Run finished
+        self.set_gui_interaction(True)
         self.running = False
-        dpg.configure_item("download", enabled=True)
+        dpg.set_value("title", "")
 
     def progress_hook(self, d):
         status = d.get("status")

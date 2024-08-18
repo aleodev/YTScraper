@@ -15,6 +15,7 @@ setup_config(
     },
 )
 config.read(CONFIG_PATH)
+
 # Scraper Instance
 ytScraper = Scraper()
 
@@ -57,14 +58,13 @@ def hide_dialog():
 # GUI Context
 dpg.create_context()
 
-
 # Thumbnail Placeholder
-width, height, channels, data = dpg.load_image("placeholder.png")
-
-with dpg.texture_registry():
-    texture_id = dpg.add_static_texture(
-        width, height, default_value=data, tag="placeholder"
-    )
+# with dpg.texture_registry():
+#     width, height, channels, data = dpg.load_image("placeholder.png")
+#     texture_id = dpg.add_static_texture(
+#         width, height, default_value=data, tag="placeholder"
+#     )
+#     dpg.add_image(width=256, height=256, texture_tag="placeholder")
 
 with dpg.window(tag="Main"):
     dpg.add_button(label="URL", enabled=False)
@@ -77,13 +77,23 @@ with dpg.window(tag="Main"):
         width=400,
         height=300,
     )
-    dpg.add_button(label="Output", callback=lambda: dpg.show_item("file_dialog_id"))
-    # dpg.add_image(width=256, height=256, texture_tag="placeholder")
+    dpg.add_button(label="Title", enabled=False)
+    dpg.add_input_text(
+        tag="title",
+        width=386,
+        pos=[55, 31],
+    )
+    dpg.add_button(
+        tag="output_dialog_button",
+        label="Output",
+        callback=lambda: dpg.show_item("file_dialog_id"),
+    )
     dpg.add_input_text(
         tag="output",
         default_value=config.get("scraper", "default_output"),
+        readonly=True,
         width=379,
-        pos=[62, 31],
+        pos=[62, 54],
     )
     dpg.add_listbox(
         label="Platform",
