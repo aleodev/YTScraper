@@ -1,9 +1,8 @@
-from pytube.exceptions import VideoUnavailable
 import dearpygui.dearpygui as dpg
 import httpx
 import yt_dlp
 from pathlib import Path
-from utils import prepare_temp_folder
+from utils import setup_temp
 from constants import CODECS, FORMATS, AUDIO_QUALITY_MAP, VIDEO_QUALITY_MAP
 
 
@@ -13,7 +12,8 @@ class Scraper:
 
     running = False
 
-    def show_msg(self, type, msg):
+    @staticmethod
+    def show_msg(type, msg):
         dpg.configure_item("dialog", show=True, label=type)
         dpg.set_value(f"dialog_msg", msg)
 
@@ -34,7 +34,7 @@ class Scraper:
         quality = dpg.get_value("quality")
         codec = CODECS.get(format, format)
         # Prep & clean temp folder
-        prepare_temp_folder()
+        setup_temp()
 
         # Set progress label
         dpg.configure_item("progress", overlay="Downloading ...")
@@ -91,7 +91,8 @@ class Scraper:
                 )
 
                 # Export path TODO:(convert this to use config instead and default to export folder)
-                export_file_path = Path.cwd() / "export" / platform / filename
+                export_dir = Path(dpg.get_value("output"))
+                export_file_path = export_dir / platform / filename
 
                 # Check if processed file exists
                 if processed_path.is_file():

@@ -1,16 +1,26 @@
 import dearpygui.dearpygui as dpg
 from scraper import Scraper
-from constants import FORMATS
-from utils import prepare_temp_folder
+from constants import FORMATS, CONFIG_PATH, TEMP_PATH
+from utils import setup_temp, setup_config
+from pathlib import Path
+import configparser
 
 # Config Setup
-
+config = configparser.ConfigParser()
+setup_config(
+    "scraper",
+    {
+        "default_output": Path.cwd() / "export",
+        "separate_platforms": True,
+    },
+)
+config.read(CONFIG_PATH)
 # Scraper Instance
 ytScraper = Scraper()
 
 
 # Callbacks
-def update_formats(reset=True):
+def get_formats(reset=True):
     platform = dpg.get_value("platform").lower()
     supported = []
     if platform.lower() == "youtube":
@@ -26,28 +36,26 @@ def update_formats(reset=True):
     return supported
 
 
+def update_default_output(sender, app_data):
+    dir = Path(app_data["file_path_name"])
+    if dir != TEMP_PATH:
+        if dir:
+            dpg.set_value("output", dir)
+            config.set("scraper", "default_output", str(dir))
+            with open(CONFIG_PATH, "w") as config_file:
+                config.write(config_file)
+        else:
+            Scraper.show_msg("error", "Invalid directory specified.")
+    else:
+        Scraper.show_msg("error", "The temp directory can't be used.")
+
+
 def hide_dialog():
     dpg.hide_item("dialog")
 
 
-def hide_success_dialog():
-    dpg.hide_item("success_dialog")
-
-
 # GUI Context
 dpg.create_context()
-
-
-def callback(sender, app_data):
-    print("OK was clicked.")
-    print("Sender: ", sender)
-    print("App Data: ", app_data)
-
-
-def cancel_callback(sender, app_data):
-    print("Cancel was clicked.")
-    print("Sender: ", sender)
-    print("App Data: ", app_data)
 
 
 # Thumbnail Placeholder
@@ -64,21 +72,25 @@ with dpg.window(tag="Main"):
     dpg.add_file_dialog(
         directory_selector=True,
         show=False,
-        callback=callback,
+        callback=update_default_output,
         tag="file_dialog_id",
-        cancel_callback=cancel_callback,
         width=400,
         height=300,
     )
-    dpg.add_button(label="Output DIR", callback=lambda: dpg.show_item("file_dialog_id"))
-    dpg.add_image(width=350, height=191, texture_tag="placeholder")
-    dpg.add_input_text(width=351, pos=[90, 31])
+    dpg.add_button(label="Output", callback=lambda: dpg.show_item("file_dialog_id"))
+    # dpg.add_image(width=256, height=256, texture_tag="placeholder")
+    dpg.add_input_text(
+        tag="output",
+        default_value=config.get("scraper", "default_output"),
+        width=379,
+        pos=[62, 31],
+    )
     dpg.add_listbox(
         label="Platform",
         tag="platform",
         default_value="YouTube",
         items=["YouTube", "SoundCloud"],
-        callback=update_formats,
+        callback=get_formats,
         pos=[445, 8],
         width=82,
         num_items=2,
@@ -109,7 +121,7 @@ with dpg.window(tag="Main"):
     dpg.add_listbox(
         label="Format",
         tag="format",
-        items=update_formats(False),
+        items=get_formats(False),
         pos=[445, 56],
         width=82,
         num_items=13,
@@ -164,10 +176,15 @@ with dpg.window(
 
 if __name__ == "__main__":
     # Startup functions
-    prepare_temp_folder()
+    setup_temp()
 
     # GUI init
-    dpg.create_viewport(title="Track Digger (rev 0.1)", width=610, height=400)
+    dpg.create_viewport(
+        title="Track Digger (rev 0.1)",
+        width=610,
+        height=400,
+        small_icon="icon.ico",
+    )
     dpg.setup_dearpygui()
     dpg.show_viewport()
     dpg.set_primary_window("Main", True)
