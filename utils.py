@@ -63,4 +63,5 @@ def set_gui_interaction(enable):
     dpg.configure_item("output_dialog_button", enabled=enable)
     dpg.configure_item("overwrite_files", enabled=enable)
     dpg.configure_item("separate_platforms", enabled=enable)
+    dpg.configure_item("label_quality", enabled=enable)
     dpg.configure_item("download", show=enable, enabled=enable)

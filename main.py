@@ -13,6 +13,7 @@ setup_config(
         "default_output": Path.cwd() / "export",
         "separate_platforms": True,
         "overwrite_files": False,
+        "label_quality": False,
     },
 )
 config.read(CONFIG_PATH)
@@ -194,6 +195,12 @@ with dpg.window(tag="Main"):
         label="Separate Platforms",
         callback=save_option,
         default_value=eval(config.get("scraper", "separate_platforms")),
+    )
+    dpg.add_checkbox(
+        tag="label_quality",
+        label="Label Quality",
+        callback=save_option,
+        default_value=eval(config.get("scraper", "label_quality")),
     )
 
 

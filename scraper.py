@@ -3,7 +3,14 @@ import httpx
 import yt_dlp
 from pathlib import Path
 from utils import setup_temp, sanitize_url, show_msg, set_gui_interaction
-from constants import CODECS, FORMATS, AUDIO_QUALITY_MAP, VIDEO_QUALITY_MAP, TEMP_PATH
+from constants import (
+    CODECS,
+    FORMATS,
+    AUDIO_QUALITY_MAP,
+    VIDEO_QUALITY_MAP,
+    QUALITY_LABEL_MAP,
+    TEMP_PATH,
+)
 
 
 class Scraper:
@@ -120,8 +127,10 @@ class Scraper:
                     f"{custom_title or title}{filename.suffix}"
                 )
 
-                # Output path TODO:(convert this to use config instead and default to export folder)
+                # Separate files by platform if set in config
                 separate = dpg.get_value("separate_platforms")
+
+                # Output path TODO:(convert this to use config instead and default to export folder)
                 output_dir = (
                     output_dir_input / platform if separate else output_dir_input
                 )
@@ -131,6 +140,14 @@ class Scraper:
 
                 # Combine the output directory with the filename
                 output_file_path = output_dir / custom_filename
+
+                # Add quality label if set in config
+                label_quality = dpg.get_value("label_quality")
+                label = QUALITY_LABEL_MAP[quality]
+                if label_quality:
+                    output_file_path = output_file_path.with_name(
+                        output_file_path.stem + f" {label}" + output_file_path.suffix
+                    )
 
                 # Check if processed file exists
                 if processed_path.is_file():
