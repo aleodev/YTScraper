@@ -1,7 +1,7 @@
 import dearpygui.dearpygui as dpg
 from scraper import Scraper
 from constants import FORMATS, CONFIG_PATH, TEMP_PATH
-from utils import setup_temp, setup_config
+from utils import setup_temp, setup_config, show_msg
 from pathlib import Path
 import configparser
 
@@ -46,10 +46,10 @@ def update_default_output(sender, app_data):
             with open(CONFIG_PATH, "w") as config_file:
                 config.write(config_file)
         else:
-            Scraper.show_msg("error", "Invalid directory specified.")
+            show_msg("error", "Invalid directory specified.")
             return False
     else:
-        Scraper.show_msg("error", "The temp directory can't be used.")
+        show_msg("error", "The temp directory can't be used.")
         return False
     return True
 
@@ -59,12 +59,12 @@ def save_default_output():
     config_dir = config.get("scraper", "default_output")
     # Compare output dir with TEMP_PATH
     if Path(dir) == TEMP_PATH:
-        Scraper.show_msg("error", "The temp directory can't be used.")
+        show_msg("error", "The temp directory can't be used.")
         dpg.set_value("output", config_dir)
     else:
         update = update_default_output(None, {"file_path_name": dir})
         if update:
-            Scraper.show_msg("info", "Default output has been saved.")
+            show_msg("info", "Default output has been saved.")
 
 
 def hide_dialog():

@@ -2,7 +2,7 @@ import dearpygui.dearpygui as dpg
 import httpx
 import yt_dlp
 from pathlib import Path
-from utils import setup_temp
+from utils import setup_temp, sanitize_url, show_msg, set_gui_interaction
 from constants import CODECS, FORMATS, AUDIO_QUALITY_MAP, VIDEO_QUALITY_MAP, TEMP_PATH
 
 
@@ -12,29 +12,39 @@ class Scraper:
 
     running = False
 
-    @staticmethod
-    def show_msg(type, msg):
-        dpg.configure_item("dialog", show=True, label=type)
-        dpg.set_value(f"dialog_msg", msg)
-
-    @staticmethod
-    def set_gui_interaction(enable):
-        dpg.configure_item("url", readonly=not enable)
-        dpg.configure_item("title", readonly=not enable)
-        dpg.configure_item("output", readonly=not enable)
-        dpg.configure_item("output_dialog_button", enabled=enable)
-        dpg.configure_item("download", show=enable, enabled=enable)
-
     def verify_url(self):
         raw_url = dpg.get_value("url")
-
-        # Fetch url
-        try:
-            r = httpx.get(raw_url)
-            r.raise_for_status()
-        except Exception:
+        # Check if URL passes platform url check
+        if any(
+            keyword in raw_url
+            for keyword in ["youtube.com/watch?v=", "soundcloud.com/"]
+        ):
+            # If url passes platform url check, sanitized url
+            sanitized_url = sanitize_url(raw_url)
+            # Fetch url
+            try:
+                r = httpx.get(sanitized_url)
+                r.raise_for_status()
+                return sanitized_url
+            except Exception:
+                show_msg("Error", "Invalid url.")
+                return False
+        else:
+            show_msg("Error", "Invalid url.")
             return False
-        return raw_url
+
+    def progress_hook(self, d):
+        status = d.get("status")
+        total = d.get("total_bytes_estimate") or d.get("total_bytes")
+        downloaded = d.get("downloaded_bytes")
+        progress = None
+        if status == "downloading" and downloaded and total:
+            progress = min(1.0, max(0.0, downloaded / total))
+        elif status == "finished":
+            progress = 1
+            dpg.configure_item("progress", overlay="Processing ...")
+
+        dpg.set_value("progress", progress)
 
     def download(self, url):
         # Retrieve requested format
@@ -133,7 +143,7 @@ class Scraper:
                             processed_path.replace(output_file_path)
 
                         # Print success message if successful
-                        self.show_msg(
+                        show_msg(
                             "success",
                             f"Successfully processed & exported {output_file_path}!",
                         )
@@ -142,27 +152,27 @@ class Scraper:
                         )
                     except Exception as e:
                         # Print error message if any exception occurs
-                        self.show_msg("Error", f"An error occurred: {e}")
+                        show_msg("Error", f"An error occurred: {e}")
                         dpg.configure_item(
                             "progress", default_value=0, overlay="Failed!"
                         )
                 else:
                     # Print error message if the file does not exist
-                    self.show_msg("Error", "Processed file does not exist.")
+                    show_msg("Error", "Processed file does not exist.")
                     dpg.configure_item("progress", default_value=0, overlay="Failed!")
 
         except yt_dlp.DownloadError as e:
             # Handle specific yt_dlp download errors
-            self.show_msg("Error", f"Download error: {e}")
+            show_msg("Error", f"Download error: {e}")
             dpg.configure_item("progress", default_value=0, overlay="Failed!")
         except Exception as e:
             # Handle general exceptions
-            self.show_msg("Error", f"An error occurred: {e}")
+            show_msg("Error", f"An error occurred: {e}")
             dpg.configure_item("progress", default_value=0, overlay="Failed!")
 
     def run(self):
         # Run started
-        self.set_gui_interaction(False)
+        set_gui_interaction(False)
         self.running = True
 
         # Check url validity
@@ -170,34 +180,18 @@ class Scraper:
 
         if verified_url:
             # Check platform
-            platform = dpg.get_value("platform").lower()
-            if platform in verified_url:
-                if platform in ("youtube", "soundcloud"):
+            selected_platform = dpg.get_value("platform").lower()
+            if selected_platform in verified_url:
+                if selected_platform in ("youtube", "soundcloud"):
                     self.download(verified_url)
                 else:
-                    self.show_msg("Error", "Unsupported platform selected.")
+                    show_msg("Error", "Unsupported platform selected.")
             else:
-                self.show_msg(
+                show_msg(
                     "Error",
                     "Incorrect platform selected.",
                 )
-        else:
-            self.show_msg("Error", "Invalid url.")
-
         # Run finished
-        self.set_gui_interaction(True)
+        set_gui_interaction(True)
         self.running = False
         dpg.set_value("title", "")
-
-    def progress_hook(self, d):
-        status = d.get("status")
-        total = d.get("total_bytes_estimate") or d.get("total_bytes")
-        downloaded = d.get("downloaded_bytes")
-        progress = None
-        if status == "downloading" and downloaded and total:
-            progress = min(1.0, max(0.0, downloaded / total))
-        elif status == "finished":
-            progress = 1
-            dpg.configure_item("progress", overlay="Processing ...")
-
-        dpg.set_value("progress", progress)
