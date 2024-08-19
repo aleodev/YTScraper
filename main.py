@@ -1,5 +1,5 @@
 import dearpygui.dearpygui as dpg
-from scraper import Scraper
+from digger import Digger
 from constants import FORMATS, CONFIG_PATH, TEMP_PATH
 from utils import setup_temp, setup_config, show_msg
 from pathlib import Path
@@ -8,7 +8,7 @@ import configparser
 # Config Setup
 config = configparser.ConfigParser()
 setup_config(
-    "scraper",
+    "digger",
     {
         "default_output": Path.cwd() / "export",
         "separate_platforms": True,
@@ -18,8 +18,8 @@ setup_config(
 )
 config.read(CONFIG_PATH)
 
-# Scraper Instance
-ytScraper = Scraper()
+# Digger Instance
+ytDigger = Digger()
 
 
 # Callbacks
@@ -44,7 +44,7 @@ def update_default_output(sender, app_data):
     if dir != TEMP_PATH:
         if dir:
             dpg.set_value("output", dir)
-            config.set("scraper", "default_output", str(dir))
+            config.set("digger", "default_output", str(dir))
             with open(CONFIG_PATH, "w") as config_file:
                 config.write(config_file)
         else:
@@ -58,7 +58,7 @@ def update_default_output(sender, app_data):
 
 def save_default_output():
     dir = dpg.get_value("output")
-    config_dir = config.get("scraper", "default_output")
+    config_dir = config.get("digger", "default_output")
     # Compare output dir with TEMP_PATH
     if Path(dir) == TEMP_PATH:
         show_msg("error", "The temp directory can't be used.")
@@ -70,7 +70,7 @@ def save_default_output():
 
 
 def save_option(sender, app_data):
-    config.set("scraper", sender, str(app_data))
+    config.set("digger", sender, str(app_data))
     with open(CONFIG_PATH, "w") as config_file:
         config.write(config_file)
 
@@ -120,7 +120,7 @@ with dpg.window(tag="Main"):
     )
     dpg.add_input_text(
         tag="output",
-        default_value=config.get("scraper", "default_output"),
+        default_value=config.get("digger", "default_output"),
         width=339,
         pos=[102, 54],
     )
@@ -182,25 +182,25 @@ with dpg.window(tag="Main"):
         tag="download",
         label="DOWNLOAD",
         width=433,
-        callback=ytScraper.run,
+        callback=ytDigger.run,
     )
     dpg.add_checkbox(
         tag="overwrite_files",
         label="Overwrite Files",
         callback=save_option,
-        default_value=eval(config.get("scraper", "overwrite_files")),
+        default_value=eval(config.get("digger", "overwrite_files")),
     )
     dpg.add_checkbox(
         tag="separate_platforms",
         label="Separate Platforms",
         callback=save_option,
-        default_value=eval(config.get("scraper", "separate_platforms")),
+        default_value=eval(config.get("digger", "separate_platforms")),
     )
     dpg.add_checkbox(
         tag="label_quality",
         label="Label Quality",
         callback=save_option,
-        default_value=eval(config.get("scraper", "label_quality")),
+        default_value=eval(config.get("digger", "label_quality")),
     )
 
 

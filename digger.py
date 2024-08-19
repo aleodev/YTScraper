@@ -13,7 +13,7 @@ from constants import (
 )
 
 
-class Scraper:
+class Digger:
     def __init__(self):
         pass
 
