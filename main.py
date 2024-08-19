@@ -47,8 +47,24 @@ def update_default_output(sender, app_data):
                 config.write(config_file)
         else:
             Scraper.show_msg("error", "Invalid directory specified.")
+            return False
     else:
         Scraper.show_msg("error", "The temp directory can't be used.")
+        return False
+    return True
+
+
+def save_default_output():
+    dir = dpg.get_value("output")
+    config_dir = config.get("scraper", "default_output")
+    # Compare output dir with TEMP_PATH
+    if Path(dir) == TEMP_PATH:
+        Scraper.show_msg("error", "The temp directory can't be used.")
+        dpg.set_value("output", config_dir)
+    else:
+        update = update_default_output(None, {"file_path_name": dir})
+        if update:
+            Scraper.show_msg("info", "Default output has been saved.")
 
 
 def hide_dialog():
@@ -84,15 +100,21 @@ with dpg.window(tag="Main"):
         pos=[55, 31],
     )
     dpg.add_button(
+        tag="save_output",
+        label="Save",
+        callback=save_default_output,
+    )
+    dpg.add_button(
         tag="output_dialog_button",
         label="Output",
         callback=lambda: dpg.show_item("file_dialog_id"),
+        pos=[48, 54],
     )
     dpg.add_input_text(
         tag="output",
         default_value=config.get("scraper", "default_output"),
-        width=379,
-        pos=[62, 54],
+        width=339,
+        pos=[102, 54],
     )
     dpg.add_listbox(
         label="Platform",
