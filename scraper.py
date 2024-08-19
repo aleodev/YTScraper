@@ -121,7 +121,10 @@ class Scraper:
                 )
 
                 # Output path TODO:(convert this to use config instead and default to export folder)
-                output_dir = output_dir_input / platform
+                separate = dpg.get_value("separate_platforms")
+                output_dir = (
+                    output_dir_input / platform if separate else output_dir_input
+                )
 
                 # Check if the directory exists, and create it if it doesn't
                 output_dir.mkdir(parents=True, exist_ok=True)
