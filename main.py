@@ -12,6 +12,7 @@ setup_config(
     {
         "default_output": Path.cwd() / "export",
         "separate_platforms": True,
+        "overwrite_files": False,
     },
 )
 config.read(CONFIG_PATH)
@@ -65,6 +66,12 @@ def save_default_output():
         update = update_default_output(None, {"file_path_name": dir})
         if update:
             show_msg("info", "Default output has been saved.")
+
+
+def save_option(sender, app_data):
+    config.set("scraper", sender, str(app_data))
+    with open(CONFIG_PATH, "w") as config_file:
+        config.write(config_file)
 
 
 def hide_dialog():
@@ -176,6 +183,18 @@ with dpg.window(tag="Main"):
         width=433,
         callback=ytScraper.run,
     )
+    dpg.add_checkbox(
+        tag="overwrite_files",
+        label="Overwrite Files",
+        callback=save_option,
+        default_value=eval(config.get("scraper", "overwrite_files")),
+    )
+    dpg.add_checkbox(
+        tag="separate_platforms",
+        label="Separate Platforms",
+        callback=save_option,
+        default_value=eval(config.get("scraper", "separate_platforms")),
+    )
 
 
 with dpg.window(
@@ -214,7 +233,8 @@ if __name__ == "__main__":
         title="Track Digger (rev 0.1)",
         width=610,
         height=400,
-        small_icon="icon.ico",
+        small_icon="resources/icon.ico",
+        resizable=False,
     )
     dpg.setup_dearpygui()
     dpg.show_viewport()

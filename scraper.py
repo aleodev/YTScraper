@@ -134,13 +134,13 @@ class Scraper:
                     try:
                         # Create output path if doesn't exist
                         output_file_path.parent.mkdir(parents=True, exist_ok=True)
+                        overwrite = dpg.get_value("overwrite_files")
 
-                        if processed_path.suffix != extension:
-                            # Rename the file only if necessary
-                            processed_path.rename(output_file_path)
-                        else:
-                            # If no renaming needed, just move the file
+                        # Overwrite if set in config
+                        if overwrite:
                             processed_path.replace(output_file_path)
+                        else:
+                            processed_path.rename(output_file_path)
 
                         # Print success message if successful
                         show_msg(
@@ -163,7 +163,7 @@ class Scraper:
 
         except yt_dlp.DownloadError as e:
             # Handle specific yt_dlp download errors
-            show_msg("Error", f"Download error: {e}")
+            show_msg("Error", f"Download error: {e.msg}")
             dpg.configure_item("progress", default_value=0, overlay="Failed!")
         except Exception as e:
             # Handle general exceptions

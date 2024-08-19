@@ -2,4 +2,7 @@ output/
 __pycache__
 export/
 temp/
+build/
+dist/
+TrackDigger.spec
 config.ini
