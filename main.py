@@ -61,7 +61,7 @@ def update_tooltips(sender, app_data):
     dpg.configure_item("url_tooltip", show=app_data)
     dpg.configure_item("title_tooltip", show=app_data)
     dpg.configure_item("output_tooltip", show=app_data)
-    dpg.configure_item("save_output_tooltip", show=app_data)
+    # dpg.configure_item("save_output_tooltip", show=app_data)
     dpg.configure_item("download_tooltip", show=app_data)
     dpg.configure_item("overwrite_tooltip", show=app_data)
     dpg.configure_item("separate_tooltip", show=app_data)
@@ -70,17 +70,17 @@ def update_tooltips(sender, app_data):
     save_option(sender, app_data)
 
 
-def save_default_output():
-    dir = dpg.get_value("output")
-    config_dir = config.get("digger", "default_output")
-    # Compare output dir with TEMP_PATH
-    if Path(dir) == TEMP_PATH:
-        show_msg("error", "The temp directory can't be used.")
-        dpg.set_value("output", config_dir)
-    else:
-        update = update_default_output(None, {"file_path_name": dir})
-        if update:
-            show_msg("info", "Default output has been saved.")
+# def save_default_output():
+#     dir = dpg.get_value("output")
+#     config_dir = config.get("digger", "default_output")
+#     # Compare output dir with TEMP_PATH
+#     if Path(dir) == TEMP_PATH:
+#         show_msg("error", "The temp directory can't be used.")
+#         dpg.set_value("output", config_dir)
+#     else:
+#         update = update_default_output(None, {"file_path_name": dir})
+#         if update:
+#             show_msg("info", "Default output has been saved.")
 
 
 def save_option(sender, app_data):
@@ -103,15 +103,15 @@ dpg.create_context()
 #         width, height, default_value=data, tag="placeholder"
 #     )
 #     dpg.add_image(width=256, height=256, texture_tag="placeholder")
-with dpg.theme() as save_button_theme:
-    with dpg.theme_component(dpg.mvButton):
-        dpg.add_theme_color(dpg.mvThemeCol_Button, (0, 131, 12, 255))  # Green color
-        dpg.add_theme_color(
-            dpg.mvThemeCol_ButtonHovered, (0, 154, 14, 255)
-        )  # Light green on hover
-        dpg.add_theme_color(
-            dpg.mvThemeCol_ButtonActive, (0, 111, 10, 255)
-        )  # Darker green when active
+# with dpg.theme() as save_button_theme:
+#     with dpg.theme_component(dpg.mvButton):
+#         dpg.add_theme_color(dpg.mvThemeCol_Button, (0, 131, 12, 255))  # Green color
+#         dpg.add_theme_color(
+#             dpg.mvThemeCol_ButtonHovered, (0, 154, 14, 255)
+#         )  # Light green on hover
+#         dpg.add_theme_color(
+#             dpg.mvThemeCol_ButtonActive, (0, 111, 10, 255)
+#         )  # Darker green when active
 
 with dpg.theme() as output_button_theme:
     with dpg.theme_component(dpg.mvButton):
@@ -155,20 +155,20 @@ with dpg.window(tag="Main"):
     )
     with dpg.tooltip(tag="output_tooltip", parent="output_dialog_button"):
         dpg.add_text("Select your preferred output folder for saving exported files.")
-    dpg.add_button(
-        tag="save_output",
-        label="Save",
-        callback=save_default_output,
-        pos=[405, 54],
-    )
-    with dpg.tooltip(tag="save_output_tooltip", parent="save_output"):
-        dpg.add_text(
-            "Set the directory where downloaded files will be saved by default."
-        )
+    # dpg.add_button(
+    #     tag="save_output",
+    #     label="Save",
+    #     callback=save_default_output,
+    #     pos=[405, 54],
+    # )
+    # with dpg.tooltip(tag="save_output_tooltip", parent="save_output"):
+    #     dpg.add_text(
+    #         "Set the directory where downloaded files will be saved by default."
+    #     )
     dpg.add_input_text(
         tag="output",
         default_value=config.get("digger", "default_output"),
-        width=339,
+        width=386,
         pos=[62, 54],
     )
     dpg.add_listbox(
@@ -271,7 +271,7 @@ with dpg.window(tag="Main"):
     )
     with dpg.tooltip(tag="tooltips_tooltip", parent="tooltips"):
         dpg.add_text("Enable or disable tooltips throughout the application.")
-    dpg.bind_item_theme("save_output", save_button_theme)
+    # dpg.bind_item_theme("save_output", save_button_theme)
     dpg.bind_item_theme("output_dialog_button", output_button_theme)
 
 
