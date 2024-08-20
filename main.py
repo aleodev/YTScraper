@@ -286,20 +286,26 @@ with dpg.window(
     dpg.add_text(wrap=375, default_value="", tag="dialog_msg")
     dpg.add_button(label="OK", callback=hide_dialog)
 
-dpg.show_style_editor()
+# dpg.show_style_editor()
 if __name__ == "__main__":
     # Startup functions
     setup_temp()
     update_tooltips("tooltips", eval(config.get("digger", "tooltips")))
 
-    # GUI init
+    # GUI Viewport
     dpg.create_viewport(
         title="Track Digger (rev 0.1)",
         width=610,
         height=400,
         small_icon="resources/icon.ico",
-        # resizable=False,
+        resizable=False,
     )
+    dpg.set_viewport_min_height(400)
+    dpg.set_viewport_max_height(400)
+    dpg.set_viewport_min_width(610)
+    dpg.set_viewport_max_width(610)
+
+    # GUI Init
     dpg.setup_dearpygui()
     dpg.show_viewport()
     dpg.set_primary_window("Main", True)
