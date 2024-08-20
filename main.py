@@ -67,7 +67,6 @@ def update_tooltips(sender, app_data):
     dpg.configure_item("separate_tooltip", show=app_data)
     dpg.configure_item("label_tooltip", show=app_data)
     dpg.configure_item("tooltips_tooltip", show=app_data)
-
     save_option(sender, app_data)
 
 
@@ -285,17 +284,17 @@ with dpg.window(
 ):
     dpg.add_text(wrap=375, default_value="", tag="dialog_msg")
     dpg.add_button(label="close", callback=hide_dialog)
-
 # NOTE THEME
 # HeaderHovered(menu button hover) -> (255,255,255,127)
 # HeaderActive(menu button hold click) -> (255,255,255,63)
 # HeaderActive(menu button hold click) -> (255,255,255,63)
 # FrameBgActive(selected menu button) -> RED IF YT, ORANGE IF SOUNDCLOUD
-dpg.show_style_editor()
-
+# update_tooltips(None, eval(config.get("digger", "tooltips")))
+# print(eval(config.get("digger", "tooltips")))
 if __name__ == "__main__":
     # Startup functions
     setup_temp()
+    update_tooltips("tooltips", eval(config.get("digger", "tooltips")))
 
     # GUI init
     dpg.create_viewport(
