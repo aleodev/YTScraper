@@ -14,6 +14,7 @@ setup_config(
         "separate_platforms": True,
         "overwrite_files": False,
         "label_quality": False,
+        "tooltips": True,
     },
 )
 config.read(CONFIG_PATH)
@@ -56,6 +57,20 @@ def update_default_output(sender, app_data):
     return True
 
 
+def update_tooltips(sender, app_data):
+    dpg.configure_item("url_tooltip", show=app_data)
+    dpg.configure_item("title_tooltip", show=app_data)
+    dpg.configure_item("output_tooltip", show=app_data)
+    dpg.configure_item("save_output_tooltip", show=app_data)
+    dpg.configure_item("download_tooltip", show=app_data)
+    dpg.configure_item("overwrite_tooltip", show=app_data)
+    dpg.configure_item("separate_tooltip", show=app_data)
+    dpg.configure_item("label_tooltip", show=app_data)
+    dpg.configure_item("tooltips_tooltip", show=app_data)
+
+    save_option(sender, app_data)
+
+
 def save_default_output():
     dir = dpg.get_value("output")
     config_dir = config.get("digger", "default_output")
@@ -89,9 +104,32 @@ dpg.create_context()
 #         width, height, default_value=data, tag="placeholder"
 #     )
 #     dpg.add_image(width=256, height=256, texture_tag="placeholder")
+with dpg.theme() as save_button_theme:
+    with dpg.theme_component(dpg.mvButton):
+        dpg.add_theme_color(dpg.mvThemeCol_Button, (0, 131, 12, 255))  # Green color
+        dpg.add_theme_color(
+            dpg.mvThemeCol_ButtonHovered, (0, 154, 14, 255)
+        )  # Light green on hover
+        dpg.add_theme_color(
+            dpg.mvThemeCol_ButtonActive, (0, 111, 10, 255)
+        )  # Darker green when active
+
+with dpg.theme() as output_button_theme:
+    with dpg.theme_component(dpg.mvButton):
+        dpg.add_theme_color(dpg.mvThemeCol_Button, (108, 27, 124, 255))  # Green color
+        dpg.add_theme_color(
+            dpg.mvThemeCol_ButtonHovered, (119, 29, 137, 255)
+        )  # Light green on hover
+        dpg.add_theme_color(
+            dpg.mvThemeCol_ButtonActive, (90, 22, 103, 255)
+        )  # Darker green when active
 
 with dpg.window(tag="Main"):
-    dpg.add_button(label="URL", enabled=False)
+    dpg.add_button(tag="url_button", label="URL", enabled=False)
+    with dpg.tooltip(tag="url_tooltip", parent="url_button"):
+        dpg.add_text(
+            "Enter the SoundCloud or YouTube link you wish to download and convert."
+        )
     dpg.add_input_text(tag="url", width=400, pos=[41, 8])
     dpg.add_file_dialog(
         directory_selector=True,
@@ -101,28 +139,38 @@ with dpg.window(tag="Main"):
         width=400,
         height=300,
     )
-    dpg.add_button(label="Title", enabled=False)
+    dpg.add_button(tag="title_button", label="Title", enabled=False)
+    with dpg.tooltip(tag="title_tooltip", parent="title_button"):
+        dpg.add_text(
+            "Specify a custom title for the output file. If left blank, the original title will be used."
+        )
     dpg.add_input_text(
         tag="title",
         width=386,
         pos=[55, 31],
     )
     dpg.add_button(
-        tag="save_output",
-        label="Save",
-        callback=save_default_output,
-    )
-    dpg.add_button(
         tag="output_dialog_button",
         label="Output",
         callback=lambda: dpg.show_item("file_dialog_id"),
-        pos=[48, 54],
     )
+    with dpg.tooltip(tag="output_tooltip", parent="output_dialog_button"):
+        dpg.add_text("Select your preferred output folder for saving exported files.")
+    dpg.add_button(
+        tag="save_output",
+        label="Save",
+        callback=save_default_output,
+        pos=[405, 54],
+    )
+    with dpg.tooltip(tag="save_output_tooltip", parent="save_output"):
+        dpg.add_text(
+            "Set the directory where downloaded files will be saved by default."
+        )
     dpg.add_input_text(
         tag="output",
         default_value=config.get("digger", "default_output"),
         width=339,
-        pos=[102, 54],
+        pos=[62, 54],
     )
     dpg.add_listbox(
         label="Platform",
@@ -184,24 +232,48 @@ with dpg.window(tag="Main"):
         width=433,
         callback=ytDigger.run,
     )
+    with dpg.tooltip(tag="download_tooltip", parent="download"):
+        dpg.add_text("Start downloading and converting the link to an MP3 file.")
     dpg.add_checkbox(
         tag="overwrite_files",
         label="Overwrite Files",
         callback=save_option,
         default_value=eval(config.get("digger", "overwrite_files")),
     )
+    with dpg.tooltip(tag="overwrite_tooltip", parent="overwrite_files"):
+        dpg.add_text(
+            "Overwrite existing files with the same name in the output directory."
+        )
     dpg.add_checkbox(
         tag="separate_platforms",
         label="Separate Platforms",
         callback=save_option,
         default_value=eval(config.get("digger", "separate_platforms")),
     )
+    with dpg.tooltip(tag="separate_tooltip", parent="separate_platforms"):
+        dpg.add_text(
+            "Organize downloaded files into separate folders by platform (SoundCloud/YouTube)."
+        )
     dpg.add_checkbox(
         tag="label_quality",
         label="Label Quality",
         callback=save_option,
         default_value=eval(config.get("digger", "label_quality")),
     )
+    with dpg.tooltip(tag="label_tooltip", parent="label_quality"):
+        dpg.add_text(
+            "Append a quality label (e.g., 'HQ') to the end of the output file name based on the selected quality."
+        )
+    dpg.add_checkbox(
+        tag="tooltips",
+        label="Tooltips",
+        callback=update_tooltips,
+        default_value=eval(config.get("digger", "tooltips")),
+    )
+    with dpg.tooltip(tag="tooltips_tooltip", parent="tooltips"):
+        dpg.add_text("Enable or disable tooltips throughout the application.")
+    dpg.bind_item_theme("save_output", save_button_theme)
+    dpg.bind_item_theme("output_dialog_button", output_button_theme)
 
 
 with dpg.window(
@@ -219,17 +291,7 @@ with dpg.window(
 # HeaderActive(menu button hold click) -> (255,255,255,63)
 # HeaderActive(menu button hold click) -> (255,255,255,63)
 # FrameBgActive(selected menu button) -> RED IF YT, ORANGE IF SOUNDCLOUD
-
-# with dpg.theme() as global_theme:
-#     with dpg.theme_component(dpg.mvAll):
-#         dpg.add_theme_color(
-#             dpg.mvThemeCol_FrameBg, (255, 140, 23), category=dpg.mvThemeCat_Core
-#         )
-#         dpg.add_theme_style(
-#             dpg.mvStyleVar_FrameRounding, 5, category=dpg.mvThemeCat_Core
-#         )
-# dpg.bind_theme(global_theme)
-# dpg.show_style_editor()
+dpg.show_style_editor()
 
 if __name__ == "__main__":
     # Startup functions
@@ -241,7 +303,7 @@ if __name__ == "__main__":
         width=610,
         height=400,
         small_icon="resources/icon.ico",
-        resizable=False,
+        # resizable=False,
     )
     dpg.setup_dearpygui()
     dpg.show_viewport()
