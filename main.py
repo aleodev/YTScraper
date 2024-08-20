@@ -1,8 +1,9 @@
 import dearpygui.dearpygui as dpg
 from digger import Digger
-from constants import FORMATS, CONFIG_PATH, TEMP_PATH
+from constants import FORMATS, CONFIG_PATH, TEMP_PATH, THEME_COLORS
 from utils import setup_temp, setup_config, show_msg
 from pathlib import Path
+from theme import create_global_theme
 import configparser
 
 # Config Setup
@@ -96,33 +97,32 @@ def hide_dialog():
 # GUI Context
 dpg.create_context()
 
-# Thumbnail Placeholder
-# with dpg.texture_registry():
-#     width, height, channels, data = dpg.load_image("placeholder.png")
-#     texture_id = dpg.add_static_texture(
-#         width, height, default_value=data, tag="placeholder"
-#     )
-#     dpg.add_image(width=256, height=256, texture_tag="placeholder")
-# with dpg.theme() as save_button_theme:
-#     with dpg.theme_component(dpg.mvButton):
-#         dpg.add_theme_color(dpg.mvThemeCol_Button, (0, 131, 12, 255))  # Green color
-#         dpg.add_theme_color(
-#             dpg.mvThemeCol_ButtonHovered, (0, 154, 14, 255)
-#         )  # Light green on hover
-#         dpg.add_theme_color(
-#             dpg.mvThemeCol_ButtonActive, (0, 111, 10, 255)
-#         )  # Darker green when active
-
+# Themes
+global_theme = create_global_theme()
 with dpg.theme() as output_button_theme:
     with dpg.theme_component(dpg.mvButton):
-        dpg.add_theme_color(dpg.mvThemeCol_Button, (108, 27, 124, 255))  # Green color
-        dpg.add_theme_color(
-            dpg.mvThemeCol_ButtonHovered, (119, 29, 137, 255)
-        )  # Light green on hover
-        dpg.add_theme_color(
-            dpg.mvThemeCol_ButtonActive, (90, 22, 103, 255)
-        )  # Darker green when active
+        # Color
+        dpg.add_theme_color(dpg.mvThemeCol_Button, (108, 27, 124, 255))
+        # Light
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, (119, 29, 137, 255))
+        # Darker
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, (90, 22, 103, 255))
 
+with dpg.theme() as download_button_theme:
+    with dpg.theme_component(dpg.mvButton):
+        # Color
+        dpg.add_theme_color(dpg.mvThemeCol_Button, THEME_COLORS["color"])
+        # Light
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, THEME_COLORS["light"])
+        # Darker
+        dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, THEME_COLORS["dark"])
+
+with dpg.theme() as progress_theme:
+    with dpg.theme_component(dpg.mvProgressBar):
+        # Color
+        dpg.add_theme_color(dpg.mvThemeCol_PlotHistogram, (163, 163, 163, 255))
+        # Darker
+        dpg.add_theme_color(dpg.mvThemeCol_FrameBg, (72, 72, 72, 255))
 with dpg.window(tag="Main"):
     dpg.add_button(tag="url_button", label="URL", enabled=False)
     with dpg.tooltip(tag="url_tooltip", parent="url_button"):
@@ -168,7 +168,7 @@ with dpg.window(tag="Main"):
     dpg.add_input_text(
         tag="output",
         default_value=config.get("digger", "default_output"),
-        width=386,
+        width=379,
         pos=[62, 54],
     )
     dpg.add_listbox(
@@ -220,11 +220,7 @@ with dpg.window(tag="Main"):
         width=82,
         num_items=3,
     )
-    dpg.add_progress_bar(
-        tag="progress",
-        width=433,
-        default_value=0,
-    )
+    dpg.add_progress_bar(tag="progress", width=433, default_value=0, overlay="0%")
     dpg.add_button(
         tag="download",
         label="DOWNLOAD",
@@ -271,9 +267,14 @@ with dpg.window(tag="Main"):
     )
     with dpg.tooltip(tag="tooltips_tooltip", parent="tooltips"):
         dpg.add_text("Enable or disable tooltips throughout the application.")
-    # dpg.bind_item_theme("save_output", save_button_theme)
-    dpg.bind_item_theme("output_dialog_button", output_button_theme)
 
+    # Global theme
+    dpg.bind_theme(global_theme)
+
+    # Custom theme(s)
+    dpg.bind_item_theme("download", download_button_theme)
+    dpg.bind_item_theme("progress", progress_theme)
+    dpg.bind_item_theme("output_dialog_button", output_button_theme)
 
 with dpg.window(
     label="",
@@ -283,14 +284,9 @@ with dpg.window(
     tag="dialog",
 ):
     dpg.add_text(wrap=375, default_value="", tag="dialog_msg")
-    dpg.add_button(label="close", callback=hide_dialog)
-# NOTE THEME
-# HeaderHovered(menu button hover) -> (255,255,255,127)
-# HeaderActive(menu button hold click) -> (255,255,255,63)
-# HeaderActive(menu button hold click) -> (255,255,255,63)
-# FrameBgActive(selected menu button) -> RED IF YT, ORANGE IF SOUNDCLOUD
-# update_tooltips(None, eval(config.get("digger", "tooltips")))
-# print(eval(config.get("digger", "tooltips")))
+    dpg.add_button(label="OK", callback=hide_dialog)
+
+dpg.show_style_editor()
 if __name__ == "__main__":
     # Startup functions
     setup_temp()

@@ -191,6 +191,9 @@ class Digger:
             dpg.configure_item("progress", default_value=0, overlay="Failed!")
 
     def run(self):
+        if dpg.get_value("url") == "":
+            show_msg("Error", "No url specified.")
+            return
         # Run started
         set_gui_interaction(False)
         self.running = True
