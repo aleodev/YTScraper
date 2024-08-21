@@ -2,7 +2,13 @@ import dearpygui.dearpygui as dpg
 import httpx
 import yt_dlp
 from pathlib import Path
-from utils import setup_temp, sanitize_url, show_msg, set_gui_interaction
+from utils import (
+    setup_temp,
+    sanitize_url,
+    show_msg,
+    set_gui_interaction,
+    sanitize_filename,
+)
 from constants import (
     CODECS,
     FORMATS,
@@ -103,11 +109,10 @@ class Digger:
 
             with yt_dlp.YoutubeDL(ydl_opts) as dlp:
                 platform = dpg.get_value("platform").lower()
-                custom_title = dpg.get_value("title").lower()
-
+                custom_title = sanitize_filename(dpg.get_value("title").lower())
                 # Process
                 info_dict = dlp.extract_info(url, download=True)
-                title = info_dict["title"]
+                title = sanitize_filename(info_dict["title"])
                 processed_path = Path(info_dict["requested_downloads"][0]["filepath"])
                 # Extension
                 extension = f".{format}"

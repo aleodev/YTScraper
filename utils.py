@@ -4,6 +4,7 @@ import configparser
 from urllib.parse import urlparse
 from constants import CONFIG_PATH, TEMP_PATH
 import dearpygui.dearpygui as dpg
+import re
 
 
 # App Utils
@@ -48,6 +49,12 @@ def sanitize_url(url):
 
     # If no base prefix matched, return the original URL
     return url
+
+
+def sanitize_filename(filename):
+    # Replace illegal characters with an underscore or remove them
+    sanitized = re.sub(r'[\/:*?"<>|]', "_", filename)
+    return sanitized
 
 
 # GUI Utils
