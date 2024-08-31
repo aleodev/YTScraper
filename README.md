@@ -25,8 +25,8 @@ Track Digger is a Python application that allows you to download and extract aud
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/yourrepository.git
-   cd yourrepository
+   git clone https://github.com/aleodev/Track-Digger.git
+   cd track-digger
    ```
 
 2. **Install required packages:**
