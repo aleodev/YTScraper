@@ -54,10 +54,6 @@ Track Digger is a Python application that allows you to download and extract aud
 - **Overwrite Files:** If enabled, existing files with the same name will be overwritten.
 - **Label Quality:** If enabled, quality labels (e.g., 'HQ') will be appended to filenames.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
 ## Contributions
 
 Contributions are welcome! Please feel free to submit a Pull Request.
