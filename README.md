@@ -7,7 +7,7 @@
   </p>
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-
+</div>
 ## Overview
 
 Track Digger is a Python application that allows you to download and extract audio or video from YouTube and SoundCloud. It supports a wide selection of audio and video formats, provides custom output settings, and features a user-friendly graphical interface powered by Dear PyGui.
