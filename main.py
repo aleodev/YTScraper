@@ -183,27 +183,35 @@ with dpg.window(tag="Main"):
     )
     # with dpg.table(
     #     header_row=True,
-    #     policy=dpg.mvTable_SizingFixedFit,
+    #     policy=dpg.mvTable_SizingStretchProp,
     #     resizable=False,
     #     no_host_extendX=True,
     #     borders_outerH=True,
     #     borders_innerV=True,
     #     borders_outerV=True,
+    #     width=433,
     # ):
 
     #     # use add_table_column to add columns to the table,
     #     # table columns use slot 0
-    #     dpg.add_table_column(label="Header 1")
-    #     dpg.add_table_column(label="Header 2")
-    #     dpg.add_table_column(label="Header 3")
-
+    #     dpg.add_table_column(label="Title")
+    #     dpg.add_table_column(label="Quality", width_fixed=True, init_width_or_weight=50)
+    #     dpg.add_table_column(label="Format", width_fixed=True, init_width_or_weight=42)
+    #     dpg.add_table_column(
+    #         label="Progress", width_fixed=True, init_width_or_weight=100
+    #     )
+    #     dpg.add_table_column(label="Status")
     #     # add_table_next_column will jump to the next row
     #     # once it reaches the end of the columns
     #     # table next column use slot 1
-    #     for i in range(0, 4):
+    #     for i in range(0, 6):
     #         with dpg.table_row():
-    #             for j in range(0, 3):
-    #                 dpg.add_text(f"Row{i} Column{j}")
+    #             dpg.add_text("kkkkkkkkkkkkk ...")
+    #             dpg.add_text("Medium")
+    #             dpg.add_text("AAC")
+    #             dpg.add_progress_bar(default_value=0.5, overlay="50%", width=100)
+    #             dpg.add_text("Downloading")
+
     dpg.add_listbox(
         label="Format",
         tag="format",
@@ -297,8 +305,11 @@ if __name__ == "__main__":
         title="Track Digger (rev 0.1)",
         width=610,
         height=400,
-        small_icon="resources/icon.ico",
         resizable=False,
+        # width=900,
+        # height=900,
+        # resizable=True,
+        small_icon="resources/icon.ico",
     )
     dpg.set_viewport_min_height(400)
     dpg.set_viewport_max_height(400)

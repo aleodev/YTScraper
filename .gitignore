@@ -5,4 +5,5 @@ temp/
 build/
 dist/
 TrackDigger.spec
+build.py
 config.ini
